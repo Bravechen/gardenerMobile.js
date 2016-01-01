@@ -8,7 +8,7 @@
 ## 四个机制
 1.  **对象管理机制**
 
-    由GNObject实现
+    由GNObjectManager实现
     
 2. **事件管理机制**
 

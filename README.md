@@ -5,7 +5,7 @@
 - JQuery.js v2.1.4
 - Hammer.js v2.0.4
 
-## 四个机制
+## 五个机制
 1.  **对象管理机制**
 
     由GNObjectManager实现
@@ -21,6 +21,10 @@
 4. **日志管理机制**
 
     由GNLogManager实现
+
+5. **清理链条机制**
+
+    由各个GN对象的`terminalClear()`实现
     
 
 ## 继承架构

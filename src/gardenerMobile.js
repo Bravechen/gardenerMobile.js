@@ -23,7 +23,9 @@ window.gardener = (function(window,$,Hammer,undefined){
         /**gn对象列表**/
         gnObjList:{length:0},
         /**事件订阅对象列表**/
-        eventFromList:{}
+        eventFromList:{},
+        /**对象池列表**/
+        poolList:{}
     };
     //========================UUID=============================
     var UUID = {};
@@ -42,7 +44,7 @@ window.gardener = (function(window,$,Hammer,undefined){
     /**
      * Returns a function that converts an integer to a zero-filled string.
      * @param {int} radix
-     * @returns {function(num&#44; length)}
+     * @returns {Function}
      */
     UUID._getIntAligner = function(radix) {
         return function(num, length) {
@@ -114,7 +116,6 @@ window.gardener = (function(window,$,Hammer,undefined){
          */
         inGNList:inGNList
     };
-
     /**
      * 是否在列表中
      * @param gnId
@@ -123,6 +124,36 @@ window.gardener = (function(window,$,Hammer,undefined){
     function inGNList(gnId){
         return PrivateClass.gnObjList[gnId]!=null;
     }
+    //============================GNPoolManager=======================================
+    /**
+     * 对象池管理对象
+     */
+    var GNPoolManager = {
+        /**
+         * 创建一个对象池对象，并把它加入到对象池管理列表中
+         */
+        createPool:function(classItemName,option){
+            return GNPoolManager.inPoolList(classItemName)?PrivateClass.poolList[classItemName]:new GNObjectPool(classItemName,option);
+        },
+        getPool:function(classItemName){
+
+        },
+        /**
+         * 从列表中移除一个对象池对象
+         * @param classItemName {String}
+         */
+        removePool:function(classItemName){
+
+        },
+        /**
+         * 是否在对象池列表中
+         * @param classItemName {String}
+         */
+        inPoolList:function(classItemName){
+            return PrivateClass.poolList.hasOwnProperty(classItemName);
+        }
+
+    };
 
     //============================Core================================================
     /**
@@ -187,6 +218,7 @@ window.gardener = (function(window,$,Hammer,undefined){
     };
     //============================GNEventManager====================================
     /**
+     * 接口：
      * IFrom{
      *  type,
      *  gnObj,
@@ -273,7 +305,7 @@ window.gardener = (function(window,$,Hammer,undefined){
     };
 
     //==============================帧渲染==================================
-    var frameHandler, animateElement, animateRequest,frameRate = 24;
+    var frameHandler, animateElement, animateRequest;
     /**
      * 帧渲染管理对象
      */
@@ -321,19 +353,7 @@ window.gardener = (function(window,$,Hammer,undefined){
         animateRequest = window.requestAnimationFrame(drawFrame, animateElement);
         frameHandler();
     }
-    //================================================================
-    /**
-     * 移动触摸事件类型
-     * @type {{TAP: string}}
-     */
-    var TouchEvent = {
-        TAP:"tap",
-        SWIPE:"swipe",
-        SWIPE_LEFT:"swipeleft",
-        SWIPE_RIGHT:"swiperight",
-        SWIPE_UP:"swipeup",
-        SWIPE_DOWN:"swipedown"
-    };
+
     //======================GardenerObject============================
     /**
      * 顶级类
@@ -435,6 +455,19 @@ window.gardener = (function(window,$,Hammer,undefined){
     GNPart.prototype.getBounds = function(coordinateType){
         
     };
+    //======================Events==========================================
+    /**
+     * 移动触摸事件类型
+     * @type {{TAP: string}}
+     */
+    var TouchEvent = {
+        TAP:"tap",
+        SWIPE:"swipe",
+        SWIPE_LEFT:"swipeleft",
+        SWIPE_RIGHT:"swiperight",
+        SWIPE_UP:"swipeup",
+        SWIPE_DOWN:"swipedown"
+    };
 
     //============================GNInteractivePart=====================================
     /**
@@ -533,6 +566,119 @@ window.gardener = (function(window,$,Hammer,undefined){
         }
         from.handler.call(fromTarget,e);
     }
+    //=========================GNObjectPool==============================================
+    /**
+     * 适用于GNObject体系的对象池
+     * @param ClassName {String} 类名全名称，来自于对象的className属性或者其它
+     * @param option {Object} 配置信息
+     * @constructor
+     * @return {Object}
+     */
+    function GNObjectPool(ClassName,option){
+        gardener.GNObject.call(this);
+        this.className  = "gardener.GNObjectPool";
+        this.superClass = gardener.GNObject.prototype;
+        if(!ClassName || typeof ClassName !== "string"){
+            console.log("init objectPool is error.");
+            return null;
+        }
+        this.classItemName = ClassName;
+        this.ClassItem = gardener.Core.getDefinitionByName(this.classItemName);
+        this.objectList = [];
+    }
+
+    gardener.Core.inherits(gardener.GNObject,GNObjectPool);
+
+    var opp = GNObjectPool.prototype;
+    /**
+     * 输出信息
+     * @returns {*}
+     */
+    opp.output = function(){
+        return "[ObjectPool:"+!!this.classItemName?this.classItemName:"undefined"+"]";
+    };
+    /**
+     * 最终清理
+     */
+    opp.terminalClear = function(){
+        GNObject.prototype.terminalClear.call(this,false);
+    };
+
+    opp.initialize = function(option){
+
+
+    };
+
+    /**
+     * 从对象池中获取一个对象
+     * @returns {*}
+     */
+    opp.gainFromPool = function(){
+        if(this.hasObjectIn()){
+            return this.objectList.pop();
+        }
+        return new this.ClassItem();
+    };
+    /**
+     * 把一个对象返还回池子中
+     * @param gnObject
+     * @returns {boolean}
+     */
+    opp.goBackToPool = function(gnObject){
+        if(gnObject.className === this.classItemName){
+            this.objectList.push(gnObject);
+        }else{
+            console.log("The param is not belong in this pool.");
+        }
+    };
+    /**
+     * 创建指定个数的对象
+     * @param sum
+     */
+    opp.createInstance = function(sum){
+        if(!sum>0)
+            return;
+        var item;
+        while(sum--){
+            item = new this.ClassItem();
+            this.objectList.push(item);
+        }
+    };
+    /**
+     * 池子中是否还有对象
+     * @returns {boolean}
+     */
+    opp.hasObjectIn = function(){
+        return this.objectList.length>0;
+    };
+    /**
+     * 当前池子中对象总数
+     * @returns {*}
+     */
+    opp.sumOfObject = function(){
+        return this.objectList.length;
+    };
+    /**
+     * 清空对象池，并决定是否要销毁对象。
+     * 当选择销毁对象时，不仅会主动调用对象的终极清理方法terminalClear()，还会从全局对象管理池中删除对象。
+     * 即希望尽可能的去除对池中对象的所有引用。
+     * @param isDelete {boolean} 是否需要销毁对象.
+     * @returns {boolean}
+     */
+    opp.clearPool = function(isDelete){
+        if(!this.objectList.length>0){
+            return false;
+        }
+        var len = this.objectList.length;
+        while(len--){
+            var obj = this.objectList.pop();
+            if(isDelete){
+                obj.terminalClear();
+                gardener.GNObjectManager.removeGNObject(obj);
+            }
+        }
+    };
+
     //=================================================================
     return {
         Core:Core,
@@ -600,119 +746,8 @@ gardener.GNContainer = (function(window,$,Hammer,gardener,undefined){
 
 })(window,jQuery,Hammer,gardener);
 
-//=========================GNObjectPool==============================================
+
 gardener.GNObjectPool = (function(window,gardener,undefined){
     "use strict";
-    /**
-     * 适用于GNObject体系的对象池
-     * @param ClassName {String} 类名全名称，来自于对象的className属性或者其它
-     * @param option {Object} 配置信息
-     * @constructor
-     * @return {Object}
-     */
-    function GNObjectPool(ClassName,option){
-        gardener.GNObject.call(this);
-        this.className  = "gardener.GNObjectPool";
-        this.superClass = gardener.GNObject.prototype;
-        if(!ClassName || typeof ClassName !== "string"){
-            console.log("init objectPool is error.");
-            return null;
-        }
-        this.classItemName = ClassName;
-        this.ClassItem = gardener.Core.getDefinitionByName(this.classItemName);
-        this.objectList = [];
-        this.initialize = true;
-    }
 
-    gardener.Core.inherits(gardener.GNObject,GNObjectPool);
-
-    var opp = GNObjectPool.prototype;
-    /**
-     * 输出信息
-     * @returns {*}
-     */
-    opp.output = function(){
-        return "[ObjectPool:"+!!this.classItemName?this.classItemName:"undefined"+"]";
-    };
-    /**
-     * 最终清理
-     */
-    opp.terminalClear = function(){
-        GNObject.prototype.terminalClear.call(this,false);
-    };
-
-    /**
-     * 从对象池中获取一个对象
-     * @returns {*}
-     */
-    opp.gainFromPool = function(){
-        if(!this.initialize)
-            return false;
-        if(this.hasObjectIn()){
-            return this.objectList.pop();
-        }
-        return new this.ClassItem();
-    };
-    /**
-     * 把一个对象返还回池子中
-     * @param gnObject
-     * @returns {boolean}
-     */
-    opp.goBackToPool = function(gnObject){
-        if(!this.initialized)
-            return false;
-        if(gnObject.className === this.classItemName){
-            this.objectList.push(gnObject);
-        }else{
-            console.log("The param is not belong in this pool.");
-        }
-    };
-    /**
-     * 创建指定个数的对象
-     * @param sum
-     */
-    opp.createInstance = function(sum){
-        if(!sum>0)
-            return;
-        var item;
-        while(sum--){
-            item = new this.ClassItem();
-            this.objectList.push(item);
-        }
-    };
-    /**
-     * 池子中是否还有对象
-     * @returns {boolean}
-     */
-    opp.hasObjectIn = function(){
-        return this.objectList.length>0;
-    };
-    /**
-     * 当前池子中对象总数
-     * @returns {*}
-     */
-    opp.sumOfObject = function(){
-        return this.objectList.length;
-    };
-    /**
-     * 清空对象池，并决定是否要销毁对象。
-     * 当选择销毁对象时，不仅会主动调用对象的终极清理方法terminalClear()，还会从全局对象管理池中删除对象。
-     * 即希望尽可能的去除对池中对象的所有引用。
-     * @param isDelete {boolean} 是否需要销毁对象.
-     * @returns {boolean}
-     */
-    opp.clearPool = function(isDelete){
-        if(!this.objectList.length>0){
-            return false;
-        }
-        var len = this.objectList.length;
-        while(len--){
-            var obj = this.objectList.pop();
-            if(isDelete){
-                obj.terminalClear();
-                gardener.GNObjectManager.removeGNObject(obj);
-            }
-        }
-    };
-    return GNObjectPool;
 })(window,gardener);

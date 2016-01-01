@@ -8,7 +8,6 @@ window.gardener = (function(window,$,Hammer,undefined){
     //=======================PrivateClass=====================
     /**
      * 私有类，提供不公开的工具方法
-     * @type {{createObject: Function}}
      */
     var PrivateClass = {
         /**
@@ -421,7 +420,6 @@ window.gardener = (function(window,$,Hammer,undefined){
             console.log("The param of element is null.");
             return false;
         }
-        //console.log("objList:",PrivateClass.gnObjList);
         return true;
     };
     /**
@@ -488,7 +486,6 @@ window.gardener = (function(window,$,Hammer,undefined){
             return false;
         }
         GNEventManager.addEventFrom(type,this.gnId,handler,data);
-        //console.log("addTouchEvent:",PrivateClass.eventFromList);
         this.elementH.on(type,onTouchEventHandler);
     };
     /**
@@ -503,7 +500,7 @@ window.gardener = (function(window,$,Hammer,undefined){
             return false;
         }
         GNEventManager.removeEventFrom(type,this.gnId,handler);
-        this.elementH.off(TouchEvent.TAP,onTouchEventHandler);
+        this.elementH.off(type,onTouchEventHandler);
     };
 
     /**
@@ -512,7 +509,6 @@ window.gardener = (function(window,$,Hammer,undefined){
      * @returns {boolean}
      */
     function onTouchEventHandler(e){
-        //console.log("event this:",e.type, e.target, e.srcEvent.currentTarget, e.srcEvent.currentTarget === e.target);
         var target = e.target;
         var srcTarget = e.srcEvent.currentTarget;
         var domTarget = target === srcTarget || !srcTarget?target:srcTarget;
@@ -713,9 +709,7 @@ gardener.GNObjectPool = (function(window,gardener,undefined){
         while(len--){
             var obj = this.objectList.pop();
             if(isDelete){
-                if(obj.hasOwnProperty("initialized") && obj.initialized === true){
-                    obj.terminalClear();
-                }
+                obj.terminalClear();
                 gardener.GNObjectManager.removeGNObject(obj);
             }
         }

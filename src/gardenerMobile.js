@@ -152,7 +152,6 @@ window.gardener = (function(window,$,Hammer,undefined){
         inPoolList:function(classItemName){
             return PrivateClass.poolList.hasOwnProperty(classItemName);
         }
-
     };
 
     //============================Core================================================
@@ -354,7 +353,7 @@ window.gardener = (function(window,$,Hammer,undefined){
         frameHandler();
     }
 
-    //======================GardenerObject============================
+    //======================GNObject============================
     /**
      * 顶级类
      * @constructor

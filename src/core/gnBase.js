@@ -193,7 +193,6 @@ gardener.GNObjectManager = (function(undefined){
 //============================TouchEvent========================================
 /**
  * 移动触摸事件类型
- * @type {{TAP: string}}
  */
 gardener.TouchEvent = {
     TAP:"tap",
@@ -359,7 +358,7 @@ gardener.GNFrameManager = (function(window,undefined){
 /**
  * 对象池管理对象
  */
-gardener.GNPoolManager = (function(window){
+gardener.GNPoolManager = (function(window,undefined){
     "use strict";
     var PrivateClass = {
         poolList:{}
@@ -393,5 +392,11 @@ gardener.GNPoolManager = (function(window){
         removePool:removePool,
         inPoolList:inPoolList
     };
-})();
-
+})(window);
+//============================GNLogManager======================================
+/**
+ * 日志管理对象
+ */
+gardener.GNLogManager = (function(window,undefined){
+    "use strict";
+})(window);

@@ -13,5 +13,5 @@ gardener.GNService = (function(window,gn,undefined){
     gn.Core.inherits(gn.GNObject,GNService);
 
     return GNService;
-    
+
 })(window,gardener);

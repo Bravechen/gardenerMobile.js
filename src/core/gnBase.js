@@ -334,7 +334,7 @@ gardener.GNFrameManager = (function(window,undefined){
         if(index!==-1){
             handlerList.splice(index,1);
         }
-        if(handlerList.length<=0){
+        if(handlerList.length<=0 && !!animateRequest){
             window.cancelAnimationFrame(animateRequest);
         }
     }

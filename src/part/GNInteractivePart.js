@@ -1,6 +1,7 @@
 /**
  * 具有交互功能的Part
  * Created by admin on 2016/1/6.
+ * @version alpha v0.0.1 增加针对当事件目标对象不存在的容错提示。
  */
 gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
     "use strict";
@@ -87,6 +88,10 @@ gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
         var target = e.target;
         var srcTarget = e.srcEvent.currentTarget;
         var domTarget = target === srcTarget || !srcTarget?target:srcTarget;
+        if(!domTarget){
+            console.log("onTouchEventHandler:","The domTarget in event is error",domTarget);
+            return false;
+        }
         var gnId = domTarget.getAttribute("data-gnId");
         var from = gn.GNEventManager.getEventFrom(e.type,gnId);
         if(!from){

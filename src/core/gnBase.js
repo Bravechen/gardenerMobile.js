@@ -110,6 +110,7 @@ window.gardener = (function(window,undefined){
     };
 
     return {
-        Core:Core
+        Core:Core,
+        VERSION:"alpha 0.0.0"
     };
 })(window);

@@ -6,14 +6,14 @@ gardener.GNPart = (function(window,$,gn,undefined){
     "use strict";
 
     function GNPart(){
-        gn.GNEventDispatcher.call(this);
+        gn.GNObject.call(this);
         this.className = "gardener.GNPart";
         this.superClass = gn.GNEventDispatcher.prototype;   //超类原型
         this.element = null;    //HTMLElement
         this.element$ = null;   //jQuery
         this.stage = null;      //本域的全局GNStage对象
     }
-    gn.Core.inherits(gn.GNEventDispatcher,GNPart); //实现继承
+    gn.Core.inherits(gn.GNObject,GNPart); //实现继承
     /**
      * 输出对象字符串表示
      * @returns {String}

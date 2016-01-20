@@ -1,7 +1,7 @@
 /**
+ * 观察者对象
  * Created by Brave Chen on 2016/1/15.
  */
-
 gardener.GNWatcher = (function(window,gn){
     "use strict";
 
@@ -13,50 +13,51 @@ gardener.GNWatcher = (function(window,gn){
 
     gn.Core.inherits(gn.GNObject,GNWatcher);
     /**
-     * 添加事件侦听
-     * @param type [必须]
-     * @param handler [必须]
-     * @param scope [可选]
-     * @param data  [可选]
+     * 添加一个事件类型的侦听
+     * @param type [necessary]
+     * @param handler [necessary]
+     * @param subscriberId [necessary]
+     * @param data  [optional]
      */
-    GNWatcher.prototype.addEventListener = function(type,handler,scope,data){
-        if(typeof type !== "string" || typeof handler !== "function" || !scope){
+    GNWatcher.prototype.addEventListener = function(type,handler,subscriberId,data){
+        if(typeof type !== "string" || typeof handler !== "function" || typeof subscriberId !== "string"){
+            console.log("At watcher's addEventListener(),the params are error.");
             return;
         }
         var eventData = {};
-        eventData.scope = scope;
+        eventData.scope = subscriberId;
         eventData.data = data;
         gn.GNEventManager.addEventFrom(type,this.gnId,handler,eventData);
     };
-
+    /**
+     * 移除一个事件类型的侦听
+     * Remove a listener for an event listener.
+     * @param type [necessary]
+     * @param handler [necessary]
+     */
     GNWatcher.prototype.removeEventListener = function(type,handler){
         if(typeof type !== "string" || typeof handler !== "function"){
             return;
         }
         gn.GNEventManager.removeEventFrom(type,this.gnId,handler);
     };
-
+    /**
+     * 是否在侦听一个事件类型
+     * Whether in listening for an event type.
+     * @param type [necessary] 事件类型
+     */
     GNWatcher.prototype.hasEvent = function(type){
-        
+        if(typeof type !== "string"){
+            console.log("At GNWatcher's hasEvent,the params are error." );
+            return;
+        }
+        return !!gn.GNEventManager.getEventFrom(type,this.gnId);
     };
 
     GNWatcher.prototype.dispatchEvent = function(type,data){
         
     };
-    
-    //======================
-    var watcher;
 
-    return {
-        /**
-         * 返回一个GNWatcher实例
-         */
-        getInstance:function(){
-            if(watcher){
-                watcher = new GNWatcher();
-            }
-            return watcher;
-        }
-    };
+    return GNWatcher;
 
 })(window,gardener);

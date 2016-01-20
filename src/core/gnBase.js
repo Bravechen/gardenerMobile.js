@@ -5,6 +5,9 @@
  */
 window.gardener = (function(window,undefined){
     "use strict";
+    /**版本号 */
+    var version = "alpha 0.0.0";
+    
     /**
      * 私有类，提供不公开的工具方法
      */
@@ -111,6 +114,8 @@ window.gardener = (function(window,undefined){
 
     return {
         Core:Core,
-        VERSION:"alpha 0.0.0"
+        VERSION:version,
+        /**debug模式 */
+        debug:false
     };
 })(window);

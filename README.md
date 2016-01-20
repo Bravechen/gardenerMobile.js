@@ -10,9 +10,10 @@
 
     由GNObjectManager实现
     
-2. **事件管理机制**
+2. **事件管理和分发机制**
 
-    由GNEventManager实现
+    事件的管理由GNEventManager实现。
+    事件的分发由GNWatcher实现
     
 3. **对象池管理机制**
 
@@ -29,8 +30,8 @@
 
 ## 继承架构
     GNObject
-    |-----------|-----------------|------------|
-    GNPart      GNInteractive     GNService    GNObjectPool
+    |-----------|-----------------|------------|--------------|
+    GNPart      GNInteractive     GNService    GNObjectPool   GNWatcher
     |
     GNInteractivePart
     |-------------|

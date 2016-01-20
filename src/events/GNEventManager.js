@@ -2,19 +2,19 @@
  * 事件管理对象
  * Created by Brave Chen on 2016/1/15.
  */
-gardener.GNEventManager = (function(undefined){
+gardener.GNEventManager = (function (undefined) {
     "use strict";
 
     var PrivateClass = {
-        eventFromList:{}
+        eventFromList: {}
     };
     /**
      * 接口：事件源对象
      * IFrom{
-     *  type,       //事件类型
-     *  gnObj,      //gn对象
-     *  handler,    //事件处理器
-     *  data        //自定义对象，会随着参数发送至事件处理器
+     *  type,           //事件类型
+     *  gnId,           //gn对象的id
+     *  handlerList,    //事件处理器队列
+     *  dataList        //自定义对象队列，会随着参数发送至事件处理器。
      * }
      */
 
@@ -22,20 +22,33 @@ gardener.GNEventManager = (function(undefined){
      * 添加一个事件源对象
      * @param type {String}
      * @param gnId {String}
-     * @param handler {Function}
-     * @param data {Object}
+     * @param handlers {Function}
+     * @param datas {Object}
      */
-    function addEventFrom(type,gnId,handler,data){
-        var id = gnId+"_"+type;
+    function addEventFrom(type, gnId, handler, data) {
+        var id = gnId + "_" + type;
         var list = PrivateClass.eventFromList;
-        var item = list[id] || {has:false};
-        item.type = type;
-        item.gnId = gnId;
-        item.handler = handler;
-        item.data = data;
+        var item = list[id] || { has: false };
+        var handlers,datas,index;
         if(!item.has){
-            list[id] = item;
-            item.has = true;
+            item.type = type;
+            item.gnId = gnId;
+            item.handlers = [];
+            item.handlers.push(handler);
+            item.datas = [];
+            item.datas.push(!data?false:data);
+        }else{
+            handlers = item.handlers;
+            datas = item.datas;
+            if(handlers.indexOf(handler)>-1){
+                index = handlers.indexOf(handler);
+                if(data){
+                    datas[index] = data;
+                }
+            }else{
+                handlers.push(handler);
+                datas.push(!data?false:data);
+            }
         }
     }
     /**
@@ -45,19 +58,30 @@ gardener.GNEventManager = (function(undefined){
      * @param handler
      * @returns {boolean}
      */
-    function removeEventFrom(type,gnId,handler){
-        var id = gnId+"_"+type;
+    function removeEventFrom(type, gnId, handler) {
+        var id = gnId + "_" + type;
         var list = PrivateClass.eventFromList;
         var from = list[id];
-        if(!from){
+        if (!from) {
             return false;
         }
-        from.type = null;
-        from.gnId = null;
-        from.handler = null;
-        from.data = null;
-        from.has = null;
-        delete PrivateClass.eventFromList[id];
+        var list = from.handlers;
+        var dataList = from.datas;
+        var index = list.indexOf(handler);
+        if(index>-1){
+            list.splice(index,1);
+            dataList.splice(index,1);
+        }else{
+            return false;
+        }
+        if(list.length===0){
+            from.type = null;
+            from.gnId = null;
+            from.handlers = null;
+            from.datas = null;
+            from.has = null;
+            delete PrivateClass.eventFromList[id];
+        }        
         return true;
     }
     /**
@@ -66,13 +90,13 @@ gardener.GNEventManager = (function(undefined){
      * @param gnId
      * @returns {*}
      */
-    function getEventFrom(type,gnId){
-        return PrivateClass.eventFromList[gnId+"_"+type];
+    function getEventFrom(type, gnId) {
+        return PrivateClass.eventFromList[gnId + "_" + type];
     }
 
     return {
-        addEventFrom:addEventFrom,
-        removeEventFrom:removeEventFrom,
-        getEventFrom:getEventFrom
+        addEventFrom: addEventFrom,
+        removeEventFrom: removeEventFrom,
+        getEventFrom: getEventFrom
     };
 })();

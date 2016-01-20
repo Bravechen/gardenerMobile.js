@@ -1,6 +1,7 @@
 /**
- * Created by admin on 2016/1/15.
+ * Created by Brave Chen on 2016/1/15.
  */
+
 gardener.GNWatcher = (function(window,gn){
     "use strict";
 
@@ -11,23 +12,51 @@ gardener.GNWatcher = (function(window,gn){
     }
 
     gn.Core.inherits(gn.GNObject,GNWatcher);
-
-    GNWatcher.prototype.addEventListener = function(type,handler){
-
+    /**
+     * 添加事件侦听
+     * @param type [必须]
+     * @param handler [必须]
+     * @param scope [可选]
+     * @param data  [可选]
+     */
+    GNWatcher.prototype.addEventListener = function(type,handler,scope,data){
+        if(typeof type !== "string" || typeof handler !== "function" || !scope){
+            return;
+        }
+        var eventData = {};
+        eventData.scope = scope;
+        eventData.data = data;
+        gn.GNEventManager.addEventFrom(type,this.gnId,handler,eventData);
     };
 
-    GNWatcher.prototype.removeEventListener = function(){
-
+    GNWatcher.prototype.removeEventListener = function(type,handler){
+        if(typeof type !== "string" || typeof handler !== "function"){
+            return;
+        }
+        gn.GNEventManager.removeEventFrom(type,this.gnId,handler);
     };
 
-    GNWatcher.prototype.hasEvent = function(){
-
+    GNWatcher.prototype.hasEvent = function(type){
+        
     };
 
-    GNWatcher.prototype.dispatchEvent = function(){
-
+    GNWatcher.prototype.dispatchEvent = function(type,data){
+        
     };
+    
+    //======================
+    var watcher;
 
-    return GNWatcher;
+    return {
+        /**
+         * 返回一个GNWatcher实例
+         */
+        getInstance:function(){
+            if(watcher){
+                watcher = new GNWatcher();
+            }
+            return watcher;
+        }
+    };
 
 })(window,gardener);

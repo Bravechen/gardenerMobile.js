@@ -107,11 +107,18 @@ gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
                 console.log(error);
             }
         }
-        //如果有需要传递给事件处理器的数据，则传入。
-        if(from.data){
-            e.gnData = from.data;
+
+        for(var i=0,item;(item=from.handlers[i])!=null;i++){
+            //如果有需要传递给事件处理器的数据，则传入。
+            var data = from.datas[i];            
+            if(data!==false){
+                e.gnData = data;
+            }
+            
+            item.call(fromTarget,e);
         }
-        from.handler.call(fromTarget,e);
     }
+    
+    return GNInteractivePart;
 
 })(window,Hammer,gardener);

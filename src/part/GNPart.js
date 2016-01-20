@@ -9,9 +9,9 @@ gardener.GNPart = (function(window,$,gn,undefined){
         gn.GNObject.call(this);
         this.className = "gardener.GNPart";
         this.superClass = gn.GNEventDispatcher.prototype;   //超类原型
-        this.element = null;    //HTMLElement
-        this.element$ = null;   //jQuery
-        this.stage = null;      //本域的全局GNStage对象
+        this.element = null;        //HTMLElement
+        this.element$ = null;      //jQuery
+        this.stage = null;            //本域的全局GNStage对象
     }
     gn.Core.inherits(gn.GNObject,GNPart); //实现继承
     /**
@@ -59,4 +59,5 @@ gardener.GNPart = (function(window,$,gn,undefined){
 
     };
     return GNPart;
+    
 })(window,jQuery,gardener);

@@ -2,47 +2,98 @@
  * stage对象
  * Created by Brave Chen on 2016/1/15.
  */
-gardener.GNStage = (function(window,gn,undefined){
+gardener.GNStage = (function(window,$,gn,undefined){
     "use strict";
 
-    function GNStage(){
-        gn.GNContainer.call(this);
-        this.className = "gardener.GNStage";
-        this.superClass = gn.GNContainer.prototype;
+    var PrivateClass = {
+        useKey:"gnStageCanUse"
+    };
 
+    function GNStage(useKey){
+        if(useKey!==PrivateClass.useKey){
+            return;
+        }
+        gn.GNWatcher.call(this);
+        this.className = "gardener.GNStage";
+        this.superClass = gn.GNWatcher.prototype;
+
+        this.win$ = null;
+        this.doc$ = null;
+        this.bodyElement = null;
         this.viewW = 0;
         this.viewH = 0;
         this.viewX = 0;
         this.viewY = 0;
+
+        this.scrollList = null;
+        this.resizeList = null;
+
+        this.docInitialized = false;
+        this.winCompleted = false;
+        /*@private use key*/
+        this._useKey = useKey;
     }
 
-    gn.Core.inherits(gn.GNContainer,GNStage);
+    gn.Core.inherits(gn.GNWatcher,GNStage);
 
-    var win$,doc$;
-    var sp = GNStage.prototype;
-
-    sp.initialize = function(){
-        var body = window.document.body;
-        gn.GNContainer.prototype.initialize.call(this,body);
-        win$ = $(window);
-        doc$ = this.element$;
+    /**
+     *
+     */
+    GNStage.prototype.initialize = function(){
+        if(this.initialized)
+            return;
+        this.win$ = $(window);
+        $(document).ready(docInitialize);
+        this.win$.on('load',winComplete);
+        this.initialized = true;
     };
+    /**
+     *
+     * @param type
+     * @param handler
+     * @param subscriberId
+     * @param data
+     */
+    GNStage.prototype.addWatch = function(type,handler,subscriberId,data){
+        if(type === gn.StageEvent.SCROLL){
+            this.scrollList = this.scrollList || [];
+            if(this.scrollList.indexOf(handler)<0){
+                this.scrollList.push({id:subscriberId,callback:handler});
+            }
+        }
 
-    sp.addEventListener = function(type,handler,useCapture){
-
-        if(type===gn.StageEvent.INIT){
+        if(type === gn.StageEvent.RESIZE){
 
         }
 
-        if(type===gn.StageEvent.WIN_COMPLETE){
-
-        }
-
+        gn.GNWatcher.prototype.addWatch.call(this,type,handler,subscriberId,data);
     };
 
-    sp.removeEventListener = function(type,handler,useCapture){
+    //======================================
+    /**
+     *
+     */
+    function docInitialize(){
+        stage.bodyElement = window.document.body;
+        stage.doc$ = $(document);
+        stage.dispatchEvent(gn.StageEvent.DOC_INIT);
+        stage.docInitialized = true;
+    }
 
-    };
+    /**
+     *
+     */
+    function winComplete(e){
+        stage.viewW = window.screen.width;
+        stage.viewH = window.screen.height;
+        e.isDOMEvent = true;
+        stage.dispatchEvent(gn.StageEvent.WIN_COMPLETE,e);
+        stage.winCompleted = true;
+    }
+
+    function onWinScroll(e){
+
+    }
 
     //======================================
 
@@ -50,15 +101,15 @@ gardener.GNStage = (function(window,gn,undefined){
 
     return {
         /**
-         * 获取一个GNStage对象
-         * @returns {GNStage}
+         * 获取GNStage对象的单例
+         * @returns {*}
          */
         getInstance:function(){
             if(!stage){
-                stage = new GNStage();
+                stage = new GNStage(PrivateClass.useKey);
             }
             return stage;
         }
-    };
+    }
 
-})(window,gardener);
+})(window,jQuery,gardener);

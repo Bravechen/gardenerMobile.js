@@ -19,7 +19,7 @@ gardener.GNWatcher = (function(window,gn){
      * @param subscriberId [necessary]
      * @param data  [optional]
      */
-    GNWatcher.prototype.addEventListener = function(type,handler,subscriberId,data){
+    GNWatcher.prototype.addWatch = function(type,handler,subscriberId,data){
         if(typeof type !== "string" || typeof handler !== "function" || typeof subscriberId !== "string"){
             console.log("At watcher's addEventListener(),the params are error.");
             return;
@@ -35,7 +35,7 @@ gardener.GNWatcher = (function(window,gn){
      * @param type [necessary]
      * @param handler [necessary]
      */
-    GNWatcher.prototype.removeEventListener = function(type,handler){
+    GNWatcher.prototype.removeWatch = function(type,handler){
         if(typeof type !== "string" || typeof handler !== "function"){
             return;
         }
@@ -46,16 +46,54 @@ gardener.GNWatcher = (function(window,gn){
      * Whether in listening for an event type.
      * @param type [necessary] 事件类型
      */
-    GNWatcher.prototype.hasEvent = function(type){
+    GNWatcher.prototype.hasWatch = function(type){
         if(typeof type !== "string"){
             console.log("At GNWatcher's hasEvent,the params are error." );
             return;
         }
         return !!gn.GNEventManager.getEventFrom(type,this.gnId);
     };
-
+    /**
+     * 派发一个会被监视的情况
+     * @param type [necessary]
+     * @param data [optional]
+     */
     GNWatcher.prototype.dispatchEvent = function(type,data){
-        
+        if(!this.hasWatch(type)){
+            return false;
+        }
+        var from = gn.GNEventManager.getEventFrom(type,this.gnId);
+        //var event = {};
+        //event.type = type;
+        //event.data = data;
+        var list = from.handlers;
+        var dataList = from.datas;
+        var itemData,sendEvent,gnEvent;
+        for(var i= 0,item;(item=list[i])!=null;i++){
+            gnEvent = {};
+            if(data.isDOMEvent){
+                gnEvent.srcEvent = data;
+            }else{
+                gnEvent.data = data;
+            }
+            gnEvent.type = type;
+            itemData = dataList[i];
+            if(itemData.data){
+                gnEvent.gnData = itemData.data;
+            }
+            gnEvent.subscriberId = itemData.scope;
+            if(itemData.scope){
+                var gnObj = gn.GNObjectManager.getGNObject(itemData.scope);
+                if(gnObj){
+                    gnEvent.target = gnObj;
+                    item.call(gnObj,gnEvent); //调整事件处理器中的this指向订阅时指向的scope
+                    continue;
+                }
+            }
+            item(gnEvent);
+        }
+        item = null;
+        itemData = null;
     };
 
     return GNWatcher;

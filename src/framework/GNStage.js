@@ -6,16 +6,21 @@ gardener.GNStage = (function(window,$,gn,undefined){
     "use strict";
 
     var PrivateClass = {
-        useKey:"gnStageCanUse"
+        useKey:"gnStageCanUse",
+        initList:null,
+        winLoadList:null,
+        scrollList:null,
+        resizeList:null
     };
+
 
     function GNStage(useKey){
         if(useKey!==PrivateClass.useKey){
             return;
         }
-        gn.GNWatcher.call(this);
+        gn.GNObject.call(this);
         this.className = "gardener.GNStage";
-        this.superClass = gn.GNWatcher.prototype;
+        this.superClass = gn.GNObject.prototype;
 
         this.win$ = null;
         this.doc$ = null;
@@ -25,16 +30,16 @@ gardener.GNStage = (function(window,$,gn,undefined){
         this.viewX = 0;
         this.viewY = 0;
 
-        this.scrollList = null;
-        this.resizeList = null;
-
         this.docInitialized = false;
         this.winCompleted = false;
+
         /*@private use key*/
         this._useKey = useKey;
+        /*@private executeList*/
+        this._executeList = null;
     }
 
-    gn.Core.inherits(gn.GNWatcher,GNStage);
+    gn.Core.inherits(gn.GNObject,GNStage);
 
     /**
      *
@@ -42,6 +47,12 @@ gardener.GNStage = (function(window,$,gn,undefined){
     GNStage.prototype.initialize = function(){
         if(this.initialized)
             return;
+
+        this._addExecuteHandler(gn.StageEvent.DOC_INIT,addInitEvent);
+        this._addExecuteHandler(gn.StageEvent.WIN_COMPLETE,addWinLoadEvent);
+        this._addExecuteHandler(gn.StageEvent.RESIZE,addResizeEvent);
+        this._addExecuteHandler(gn.StageEvent.SCROLL,addScrollEvent);
+
         this.win$ = $(window);
         $(document).ready(docInitialize);
         this.win$.on('load',winComplete);
@@ -54,20 +65,66 @@ gardener.GNStage = (function(window,$,gn,undefined){
      * @param subscriberId
      * @param data
      */
-    GNStage.prototype.addWatch = function(type,handler,subscriberId,data){
-        if(type === gn.StageEvent.SCROLL){
-            this.scrollList = this.scrollList || [];
-            if(this.scrollList.indexOf(handler)<0){
-                this.scrollList.push({id:subscriberId,callback:handler});
-            }
+    GNStage.prototype.addEventListener = function(type,handler,subscriberId,data){
+        if(typeof type !== "string" || handler==null || typeof handler !== "function" || typeof subscriberId !== "string"){
+            console.log("At GNStage's addEventListener,the params are error.");
+            return;
         }
-
-        if(type === gn.StageEvent.RESIZE){
-
-        }
-
-        gn.GNWatcher.prototype.addWatch.call(this,type,handler,subscriberId,data);
+        this._executeList = this._executeList || {};
+        this._executeList[type].call(this,true,type,handler,subscriberId,data);
     };
+
+    GNStage.prototype.removeEventListener = function(type,handler){
+
+    };
+
+    /**
+     * 添加执行方法
+     * @param type
+     * @param handler
+     * @param useKey
+     * @private
+     */
+    GNStage.prototype._addExecuteHandler = function(type,handler,useKey){
+        if(useKey!==PrivateClass.useKey){
+            return;
+        }
+        this._executeList[type] = handler;
+    };
+
+    //======================================
+
+    /**
+     *
+     */
+    function addScrollEvent(addOrRemove,type,handler,subscriberId,data){
+
+    }
+
+    /**
+     *
+     */
+    function addInitEvent(addOrRemove,type,handler,subscriberId,data){
+
+    }
+
+    /**
+     *
+     */
+    function addWinLoadEvent(addOrRemove,type,handler,subscriberId,data){
+        if(stage.winCompleted){
+            return;
+        }
+
+    }
+
+    /**
+     *
+     */
+    function addResizeEvent(addOrRemove,type,handler,subscriberId,data){
+
+    }
+
 
     //======================================
     /**

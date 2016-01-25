@@ -30,8 +30,8 @@
 
 ## 继承架构
     GNObject
-    |-----------|-----------------|------------|--------------|
-    GNPart      GNInteractive     GNService    GNObjectPool   GNWatcher
+    |-----------|-----------------|------------|--------------|------------|
+    GNPart      GNInteractive     GNService    GNObjectPool   GNWatcher    GNStage
     |
     GNInteractivePart
     |-------------|

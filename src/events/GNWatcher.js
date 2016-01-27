@@ -55,17 +55,15 @@ gardener.GNWatcher = (function(window,gn){
     };
     /**
      * 派发一个会被监视的情况
-     * @param type [necessary]
-     * @param data [optional]
+     * @param type {String} [necessary]
+     * @param data {Object} [optional]
+     * @param outputListeners {Array} [optional]
      */
-    GNWatcher.prototype.dispatchEvent = function(type,data){
+    GNWatcher.prototype.dispatchEvent = function(type,data,outputListeners){
         if(!this.hasWatch(type)){
             return false;
         }
         var from = gn.GNEventManager.getEventFrom(type,this.gnId);
-        //var event = {};
-        //event.type = type;
-        //event.data = data;
         var list = from.handlers;
         var dataList = from.datas;
         var itemData,sendEvent,gnEvent;
@@ -94,6 +92,9 @@ gardener.GNWatcher = (function(window,gn){
         }
         item = null;
         itemData = null;
+        if(outputListeners){
+
+        }
     };
 
     return GNWatcher;

@@ -3,7 +3,7 @@
  */
 gardener.StageEvent = {
     DOC_INIT:"docInit",
-    WIN_COMPLETE:"winComplete",
+    WIN_COMPLETE:"load",
     RESIZE:"resize",
     SCROLL:"scroll"
 };

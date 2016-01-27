@@ -22,8 +22,8 @@ gardener.GNEventManager = (function (undefined) {
      * 添加一个事件源对象
      * @param type {String}
      * @param gnId {String}
-     * @param handlers {Function}
-     * @param datas {Object}
+     * @param handler {Function}
+     * @param data {Object}
      */
     function addEventFrom(type, gnId, handler, data) {
         var id = gnId + "_" + type;
@@ -37,6 +37,7 @@ gardener.GNEventManager = (function (undefined) {
             item.handlers.push(handler);
             item.datas = [];
             item.datas.push(!data?false:data);
+            item.has = true;
         }else{
             handlers = item.handlers;
             datas = item.datas;
@@ -65,16 +66,17 @@ gardener.GNEventManager = (function (undefined) {
         if (!from) {
             return false;
         }
-        var list = from.handlers;
-        var dataList = from.datas;
-        var index = list.indexOf(handler);
-        if(index>-1){
-            list.splice(index,1);
-            dataList.splice(index,1);
-        }else{
-            return false;
+        list = from.handlers;
+        if(list.length>0){
+            var dataList = from.datas;
+            var index = list.indexOf(handler);
+            if(index>-1){
+                list.splice(index,1);
+                dataList.splice(index,1);
+            }
         }
-        if(list.length===0){
+
+        if(!list || list.length<=0){
             from.type = null;
             from.gnId = null;
             from.handlers = null;
@@ -92,6 +94,16 @@ gardener.GNEventManager = (function (undefined) {
      */
     function getEventFrom(type, gnId) {
         return PrivateClass.eventFromList[gnId + "_" + type];
+    }
+
+    /**
+     * 是否已经注册了一个事件源
+     * @param type
+     * @param gnId
+     * @returns {boolean}
+     */
+    function hasEventFrom(type,gnId){
+        return !!PrivateClass.eventFromList[gnId+"_"+type];
     }
 
     return {

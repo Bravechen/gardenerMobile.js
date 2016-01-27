@@ -6,13 +6,10 @@ gardener.GNStage = (function(window,$,gn,undefined){
     "use strict";
 
     var PrivateClass = {
-        useKey:"gnStageCanUse",
-        initList:null,
-        winLoadList:null,
-        scrollList:null,
-        resizeList:null
+        useKey:"gnStageCanUse"
     };
 
+    var StageEvent = gn.StageEvent;
 
     function GNStage(useKey){
         if(useKey!==PrivateClass.useKey){
@@ -42,7 +39,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
     gn.Core.inherits(gn.GNObject,GNStage);
 
     /**
-     *
+     * 初始化
      */
     GNStage.prototype.initialize = function(){
         if(this.initialized)
@@ -55,15 +52,15 @@ gardener.GNStage = (function(window,$,gn,undefined){
 
         this.win$ = $(window);
         $(document).ready(docInitialize);
-        this.win$.on('load',winComplete);
+        this.win$.on(StageEvent.WIN_COMPLETE,winComplete);
         this.initialized = true;
     };
     /**
-     *
-     * @param type
-     * @param handler
-     * @param subscriberId
-     * @param data
+     * 添加事件侦听
+     * @param type {String} [necessary] 事件类型
+     * @param handler {Function} [necessary] 处理函数
+     * @param subscriberId {String} [necessary] 处理函数作用域绑定的this指向的GN对象
+     * @param data {Object} [optional] 希望会发送至处理函数中的对象
      */
     GNStage.prototype.addEventListener = function(type,handler,subscriberId,data){
         if(typeof type !== "string" || handler==null || typeof handler !== "function" || typeof subscriberId !== "string"){
@@ -71,18 +68,39 @@ gardener.GNStage = (function(window,$,gn,undefined){
             return;
         }
         this._executeList = this._executeList || {};
-        this._executeList[type].call(this,true,type,handler,subscriberId,data);
+        var canAddEvent = this._executeList[type].call(this,type);
+        if(canAddEvent){
+            gn.GNEventManager.addEventFrom(type,this.gnId,handler,{scope:subscriberId,data:data});
+        }else{
+            //add log
+        }
     };
-
+    /**
+     * 移除事件侦听
+     * @param type {String} [necessary] 事件类型
+     * @param handler {Function} [necessary] 处理函数
+     */
     GNStage.prototype.removeEventListener = function(type,handler){
-
+        if(gn.GNEventManager.hasEventFrom(type,this.gnId)){
+            gn.GNEventManager.removeEventFrom(type,this.gnId,handler);
+        }
+        if(!gn.GNEventManager.hasEventFrom(type,this.gnId)){
+            if(type === StageEvent.SCROLL){
+                this.win$.off(StageEvent.SCROLL);
+            }
+            if(type === StageEvent.RESIZE){
+                this.win$.off(StageEvent.RESIZE);
+            }
+        }
     };
+
+    //==================private====================
 
     /**
      * 添加执行方法
-     * @param type
-     * @param handler
-     * @param useKey
+     * @param type {String} [necessary] 事件类型
+     * @param handler {Function} [necessary] 处理函数
+     * @param useKey {String} [necessary] 内部使用验证标识
      * @private
      */
     GNStage.prototype._addExecuteHandler = function(type,handler,useKey){
@@ -92,65 +110,128 @@ gardener.GNStage = (function(window,$,gn,undefined){
         this._executeList[type] = handler;
     };
 
-    //======================================
-
     /**
-     *
+     * 处理添加滚动事件
+     * @param type {String} [necessary] 事件类型
      */
-    function addScrollEvent(addOrRemove,type,handler,subscriberId,data){
-
-    }
-
-    /**
-     *
-     */
-    function addInitEvent(addOrRemove,type,handler,subscriberId,data){
-
-    }
-
-    /**
-     *
-     */
-    function addWinLoadEvent(addOrRemove,type,handler,subscriberId,data){
-        if(stage.winCompleted){
-            return;
+    function addScrollEvent(type){
+        if(!gn.GNEventManager.hasEventFrom(type,stage.gnId)){
+            stage.win$.on(StageEvent.SCROLL,onWinScroll);
         }
-
+        return true;
     }
 
     /**
-     *
+     * 处理添加初始化事件
+     * @param type {String} [necessary] 事件类型
+     * @returns {boolean}
      */
-    function addResizeEvent(addOrRemove,type,handler,subscriberId,data){
-
+    function addInitEvent(type){
+        return !stage.initialized;
     }
 
+    /**
+     * 处理添加win加载完毕事件
+     * @param type {String} [necessary] 事件类型
+     * @returns {boolean}
+     */
+    function addWinLoadEvent(type){
+        return !stage.winCompleted;
+    }
+
+    /**
+     * 处理添加改变尺寸事件
+     * @param type {String} [necessary] 事件类型
+     * @returns {boolean}
+     */
+    function addResizeEvent(type){
+        if(!gn.GNEventManager.hasEventFrom(type,stage.gnId)){
+            stage.win$.on(StageEvent.RESIZE,onWinResize);
+        }
+        return true;
+    }
 
     //======================================
     /**
-     *
+     * 文档初始化事件
      */
     function docInitialize(){
         stage.bodyElement = window.document.body;
         stage.doc$ = $(document);
-        stage.dispatchEvent(gn.StageEvent.DOC_INIT);
         stage.docInitialized = true;
+
+        doDispatchEvent(StageEvent.DOC_INIT,stage.gnId,true);
+        gn.GNEventManager.removeEventFrom(StageEvent.DOC_INIT,stage.gnId);
     }
 
     /**
-     *
+     * 资源加载完成事件
+     * @param e
      */
     function winComplete(e){
         stage.viewW = window.screen.width;
         stage.viewH = window.screen.height;
-        e.isDOMEvent = true;
-        stage.dispatchEvent(gn.StageEvent.WIN_COMPLETE,e);
         stage.winCompleted = true;
+
+        doDispatchEvent(StageEvent.WIN_COMPLETE,stage.gnId,true,e);
+        gn.GNEventManager.removeEventFrom(StageEvent.WIN_COMPLETE,stage.gnId);
+        stage.win$.off(StageEvent.WIN_COMPLETE);
     }
 
+    /**
+     * 屏幕滚动事件
+     * @param e
+     */
     function onWinScroll(e){
-
+        stage.viewX = document.body.scrollLeft;
+        stage.viewY = document.body.scrollTop;
+        doDispatchEvent(StageEvent.SCROLL,stage.gnId,false,e);
     }
+
+    /**
+     * 尺寸改变事件
+     * @param e
+     */
+    function onWinResize(e){
+        stage.viewW = window.screen.width;
+        stage.viewH = window.screen.height;
+        doDispatchEvent(StageEvent.SCROLL,stage.gnId,false,e);
+    }
+
+    /**
+     * 执行分派事件
+     * @param type {String} [necessary] 事件类型
+     * @param gnId {String} [necessary] 注册事件的gn对象id
+     * @param isOnce {Boolean} [optional] 是否只触发一次
+     * @param srcEvent {Object} [optional] dom事件
+     */
+    function doDispatchEvent(type,gnId,isOnce,srcEvent){
+        var from = gn.GNEventManager.getEventFrom(type,gnId);
+        if(!from){
+            //add log
+            return;
+        }
+        isOnce = !!isOnce;
+        var len = from.handlers.length;
+        var item,itemData,event;
+        while(len>0){
+            itemData = isOnce?from.datas.pop():from.datas[len-1];
+            item = isOnce?from.handlers.pop():from.handlers[len-1];
+            len--;
+            event = {};
+            event.srcEvent = srcEvent;
+            event.type = type;
+            event.target = gn.GNObjectManager.getGNObject(itemData.scope);
+            event.data = itemData.data;
+            if(event.target){
+                item.call(event.target,event);
+            }else{
+                item(event);
+            }
+        }
+    }
+
+
 
     //======================================
 

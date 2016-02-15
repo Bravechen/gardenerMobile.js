@@ -12,18 +12,20 @@ gardener.GNFrameManager = (function(window,undefined){
     /**
      * IFrameFrom{
      *  id:String,
-     *  handler:Function
-     *  data:Object
+     *  handler:Function,
+     *  data:Object,
+     *  isPlaying:Boolean
      * }
      *
      **/
 
     var initialized = false,frameRate = 60,animateElement,animateRequest;
+    var isPlay = false;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
     /**
      * 初始化
      */
     function initialize(){
-        var vendors = ['ms', 'moz', 'webkit', 'o'];
         for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
             window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
             window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
@@ -63,12 +65,15 @@ gardener.GNFrameManager = (function(window,undefined){
             frameFrom.handler = handler;
             frameFrom.data = data;
             PrivateClass.handlerList[frameFrom.id] = frameFrom;
+            PrivateClass.handlerList.length++;
+            frameFrom.isPlaying = true;
         }else{
             return;
         }
 
         if(!animateRequest){
             animateRequest = window.requestAnimationFrame(drawFrame,element);
+            isPlay = true;
         }
 
         return frameFrom.id;
@@ -85,12 +90,15 @@ gardener.GNFrameManager = (function(window,undefined){
             frameFrom.id = null;
             frameFrom.handler = null;
             frameFrom.data = null;
+            frameFrom.isPlaying = null;
             delete PrivateClass.handlerList[key];
+            PrivateClass.handlerList.length--;
         }
         if(list.length<=0 && !!animateRequest){
             window.cancelAnimationFrame(animateRequest);
             animateRequest = null;
             animateElement = null;
+            isPlay = false;
         }
     }
 
@@ -100,9 +108,31 @@ gardener.GNFrameManager = (function(window,undefined){
      */
     function pauseFrameListener(handlerId){
 
+        if(arguments.length===0){
+            isPlay = false;
+            return;
+        }
+
+        if(inListById(handlerId)){
+            var frameFrom = PrivateClass.handlerList[handlerId];
+            frameFrom.isPlaying = false;
+        }
     }
 
+    /**
+     *
+     * @param handlerId
+     */
     function continueFrameListener(handlerId){
+        if(arguments.length===0){
+            isPlay = true;
+            return;
+        }
+
+        var frameFrom;
+        if(inListById(handlerId) && !(frameFrom=PrivateClass.handlerList[handlerId]).isPlaying){
+            frameFrom.isPlaying = true;
+        }
 
     }
 
@@ -112,9 +142,22 @@ gardener.GNFrameManager = (function(window,undefined){
      * 提交帧更新请求
      * **/
     function drawFrame() {
+        if(!isPlay){
+            return;
+        }
         animateRequest = window.requestAnimationFrame(drawFrame, animateElement);
-        for(var i= 0,item;(item=PrivateClass.handlerList[i])!=null;i++){
-            item();
+
+        var list = PrivateClass.handlerList;
+        var item;
+        for(var key in list){
+            if(list.hasOwnProperty(key) && (item=PrivateClass.handlerList[key]).isPlaying){
+                var data = item.data;
+                if(data){
+                    item.handler(data);
+                }else{
+                    item.handler();
+                }
+            }
         }
     }
 
@@ -133,10 +176,21 @@ gardener.GNFrameManager = (function(window,undefined){
         return false;
     }
 
+    /**
+     * 以id的方式查询处理器是否在列表中
+     * @param handlerId
+     * @returns {boolean}
+     */
+    function inListById(handlerId){
+        return !!PrivateClass.handlerList[handlerId];
+    }
+
     //=========================================
     return {
         frameRate:frameRate,
         addFrameListener:addFrameListener,
-        removeFrameListener:removeFrameListener
+        removeFrameListener:removeFrameListener,
+        pauseFrameListener:pauseFrameListener,
+        continueFrameListener:continueFrameListener
     };
 })(window);

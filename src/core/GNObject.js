@@ -3,7 +3,7 @@
  * @version alpha v0.0.0 开发各项功能
  * @dependence jQuery v2.1.4,Hammer v2.0.4
  */
-gardener.GNObject = (function(window,gardener,undefined){
+gardener.GNObject = (function(window,gn,undefined){
     "use strict";
     /**
      * 顶级类
@@ -12,10 +12,10 @@ gardener.GNObject = (function(window,gardener,undefined){
     function GNObject(){
         this.className = "gardener.GNObject";
         this.superClass = null;
-        this.gnId = gardener.Core.getUUID();
+        this.gnId = gn.Core.getUUID();
         this._gnId = this.gnId;
         this.initialized = false;
-        gardener.GNObjectManager.addGNObject(this);
+        gn.OM.addGNObject(this);
     }
     /**
      * 输出对象字符串表示
@@ -34,17 +34,17 @@ gardener.GNObject = (function(window,gardener,undefined){
         //如果使用了对象池，则重置后返回对象池。
         if(!!usePool){
             this.initialized = false;
-            gardener.GNObjectManager.changeGNId(this._gnId,this.gnId);
-            var pool = gardener.GNPoolManager.getPool(this.className);
+            gn.OM.changeGNId(this._gnId,this.gnId);
+            var pool = gn.GNPoolManager.getPool(this.className);
             if(!pool){
                 console.log("don't go back to pool");
             }
             return;
         }
         //从对象列表中清除改对象。首先使用gnId清除，不成功则使用_gnId清除
-        var success = gardener.GNObjectManager.removeGNObject(this.gnId);
+        var success = gn.OM.removeGNObject(this.gnId);
         if(!success){
-            success = gardener.GNObjectManager.removeGNObject(this._gnId);
+            success = gn.OM.removeGNObject(this._gnId);
             if(!success){
                 console.log("This GNObject is cleaned or not in GNObjectManager's list.",this.gnId,this._gnId);
             }
@@ -55,6 +55,7 @@ gardener.GNObject = (function(window,gardener,undefined){
         this._gnId = null;
         this.initialized = null;
     };
+
     return GNObject;
 })(window,gardener);
 

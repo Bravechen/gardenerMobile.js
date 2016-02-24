@@ -8,8 +8,11 @@ gardener.GNGlobalManager = (function(window,$,gn,undefined){
 
     var gnStage = gn.GNStage.getInstance();
 
-    return {
+
+    window.gardener.GM = {
         stage:gnStage
-    }
+    };
+
+    return window.gardener.GM;
 
 })(window,jQuery,gardener);

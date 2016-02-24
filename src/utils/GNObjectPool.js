@@ -112,9 +112,10 @@ gardener.GNObjectPool = (function(window,gn,undefined){
                 if(obj.hasOwnProperty("initialized") && obj.initialized === true){
                     obj.terminalClear();
                 }
-                gn.GNObjectManager.removeGNObject(obj);
+                gn.OM.removeGNObject(obj);
             }
         }
     };
     return GNObjectPool;
+
 })(window,gardener);

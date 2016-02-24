@@ -2,7 +2,7 @@
  * GN对象管理类
  * Created by Brave Chen on 2016/1/15.
  */
-gardener.GNObjectManager = (function(undefined){
+gardener.GNObjectManager = (function(window,undefined){
     "use strict";
     /**
      * 私有对象类
@@ -68,12 +68,22 @@ gardener.GNObjectManager = (function(undefined){
     function inGNList(gnId){
         return PrivateClass.gnObjList[gnId]!=null;
     }
+
+    function length(){
+        return PrivateClass.gnObjList.length;
+    }
+
     //==================================================
-    return {
+
+    window.gardener.OM = {
         addGNObject:addGNObject,
         removeGNObject:removeGNObject,
         getGNObject:getGNObject,
         changeGNId:changeGNId,
-        inGNList:inGNList
+        inGNList:inGNList,
+        length:length
     };
-})();
+
+    return window.gardener.OM;
+
+})(window);

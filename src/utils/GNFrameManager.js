@@ -186,11 +186,14 @@ gardener.GNFrameManager = (function(window,undefined){
     }
 
     //=========================================
-    return {
+
+    window.gardener.FM = {
         frameRate:frameRate,
         addFrameListener:addFrameListener,
         removeFrameListener:removeFrameListener,
         pauseFrameListener:pauseFrameListener,
         continueFrameListener:continueFrameListener
     };
+
+    return window.gardener.FM;
 })(window);

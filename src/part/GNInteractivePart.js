@@ -49,7 +49,7 @@ gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
             console.log("addTouchEvent's param is error",this.elementH,handler);
             return false;
         }
-        gn.GNEventManager.addEventFrom(type,this.gnId,handler,data);
+        gn.EM.addEventFrom(type,this.gnId,handler,data);
         this.elementH.on(type,onTouchEventHandler);
     };
     /**
@@ -63,7 +63,7 @@ gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
             console.log("removeTouchEvent's param is error",this.elementH,handler);
             return false;
         }
-        gn.GNEventManager.removeEventFrom(type,this.gnId,handler);
+        gn.EM.removeEventFrom(type,this.gnId,handler);
         this.elementH.off(type,onTouchEventHandler);
     };
     /**
@@ -72,7 +72,7 @@ gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
      * @return {Boolean}
      */
     GNInteractivePart.prototype.offAllEvents = function(){
-        var list = gn.GNEventManager.getEventFromList(this.gnId);
+        var list = gn.EM.getEventFromList(this.gnId);
         if(!list)
             return;
         for(var i= 0,item;(item=list[i])!=null;i++){
@@ -93,16 +93,16 @@ gardener.GNInteractivePart = (function(window,Hammer,gn,undefined){
             return false;
         }
         var gnId = domTarget.getAttribute("data-gnId");
-        var from = gn.GNEventManager.getEventFrom(e.type,gnId);
+        var from = gn.EM.getEventFrom(e.type,gnId);
         if(!from){
             console.log("onTouchEventHandler is error.",from,gnId+"_"+ e.type);
             return false;
         }
-        var fromTarget = gn.GNObjectManager.getGNObject(gnId);
+        var fromTarget = gn.OM.getGNObject(gnId);
         //当target是一个GNObject时，事件的gnTarget指向他，否则为空
         if(target.hasAttribute('data-gnId')){
             try{
-                e.gnTarget = gn.GNObjectManager.getGNObject(target.getAttribute('data-gnId'));
+                e.gnTarget = gn.OM.getGNObject(target.getAttribute('data-gnId'));
             }catch(error){
                 console.log(error);
             }

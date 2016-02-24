@@ -36,9 +36,13 @@ gardener.GNPoolManager = (function(window,undefined){
         }
     }
 
-    return {
+    //========================================
+
+    window.gardener.PM = {
         getPool:getPool,
         removePool:removePool,
         inPoolList:inPoolList
     };
+
+    return window.gardener.PM;
 })(window);

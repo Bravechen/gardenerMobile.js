@@ -31,7 +31,7 @@ gardener.GNPart = (function(window,$,gn,undefined){
         if(element){
             var id = element.getAttribute('data-gnId');
             if(!!id){
-                gn.GNObjectManager.changeGNId(id,this.gnId);
+                gn.OM.changeGNId(id,this.gnId);
             }
             this.element = element;         //HTMLElement
             this.element$ = $(element);     //jQuery

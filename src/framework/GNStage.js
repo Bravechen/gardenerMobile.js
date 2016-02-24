@@ -70,7 +70,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
         this._executeList = this._executeList || {};
         var canAddEvent = this._executeList[type].call(this,type);
         if(canAddEvent){
-            gn.GNEventManager.addEventFrom(type,this.gnId,handler,{scope:subscriberId,data:data});
+            gn.EM.addEventFrom(type,this.gnId,handler,{scope:subscriberId,data:data});
         }else{
             //add log
         }
@@ -81,10 +81,10 @@ gardener.GNStage = (function(window,$,gn,undefined){
      * @param handler {Function} [necessary] 处理函数
      */
     GNStage.prototype.removeEventListener = function(type,handler){
-        if(gn.GNEventManager.hasEventFrom(type,this.gnId)){
-            gn.GNEventManager.removeEventFrom(type,this.gnId,handler);
+        if(gn.EM.hasEventFrom(type,this.gnId)){
+            gn.EM.removeEventFrom(type,this.gnId,handler);
         }
-        if(!gn.GNEventManager.hasEventFrom(type,this.gnId)){
+        if(!gn.EM.hasEventFrom(type,this.gnId)){
             if(type === StageEvent.SCROLL){
                 this.win$.off(StageEvent.SCROLL);
             }
@@ -115,7 +115,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
      * @param type {String} [necessary] 事件类型
      */
     function addScrollEvent(type){
-        if(!gn.GNEventManager.hasEventFrom(type,stage.gnId)){
+        if(!gn.EM.hasEventFrom(type,stage.gnId)){
             stage.win$.on(StageEvent.SCROLL,onWinScroll);
         }
         return true;
@@ -145,7 +145,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
      * @returns {boolean}
      */
     function addResizeEvent(type){
-        if(!gn.GNEventManager.hasEventFrom(type,stage.gnId)){
+        if(!gn.EM.hasEventFrom(type,stage.gnId)){
             stage.win$.on(StageEvent.RESIZE,onWinResize);
         }
         return true;
@@ -161,7 +161,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
         stage.docInitialized = true;
 
         doDispatchEvent(StageEvent.DOC_INIT,stage.gnId,true);
-        gn.GNEventManager.removeEventFrom(StageEvent.DOC_INIT,stage.gnId);
+        gn.EM.removeEventFrom(StageEvent.DOC_INIT,stage.gnId);
     }
 
     /**
@@ -174,7 +174,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
         stage.winCompleted = true;
 
         doDispatchEvent(StageEvent.WIN_COMPLETE,stage.gnId,true,e);
-        gn.GNEventManager.removeEventFrom(StageEvent.WIN_COMPLETE,stage.gnId);
+        gn.EM.removeEventFrom(StageEvent.WIN_COMPLETE,stage.gnId);
         stage.win$.off(StageEvent.WIN_COMPLETE);
     }
 
@@ -206,7 +206,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
      * @param srcEvent {Object} [optional] dom事件
      */
     function doDispatchEvent(type,gnId,isOnce,srcEvent){
-        var from = gn.GNEventManager.getEventFrom(type,gnId);
+        var from = gn.EM.getEventFrom(type,gnId);
         if(!from){
             //add log
             return;
@@ -221,7 +221,7 @@ gardener.GNStage = (function(window,$,gn,undefined){
             event = {};
             event.srcEvent = srcEvent;
             event.type = type;
-            event.target = gn.GNObjectManager.getGNObject(itemData.scope);
+            event.target = gn.OM.getGNObject(itemData.scope);
             event.data = itemData.data;
             if(event.target){
                 item.call(event.target,event);
@@ -230,8 +230,6 @@ gardener.GNStage = (function(window,$,gn,undefined){
             }
         }
     }
-
-
 
     //======================================
 

@@ -37,10 +37,12 @@ gardener.GNLogManager = (function(window,undefined){
 
     }
 
-    return{
+    window.gardener.LM = {
         setPrompt:setPrompt,
         addLog:addLog,
         showAllLog:showAllLog,
         showLastLog:showLastLog
     };
+
+    return window.gardener.LM;
 })(window);

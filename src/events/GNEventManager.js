@@ -2,7 +2,7 @@
  * 事件管理对象
  * Created by Brave Chen on 2016/1/15.
  */
-gardener.GNEventManager = (function (undefined) {
+gardener.GNEventManager = (function (window,undefined) {
     "use strict";
 
     var PrivateClass = {
@@ -28,7 +28,7 @@ gardener.GNEventManager = (function (undefined) {
     function addEventFrom(type, gnId, handler, data) {
         var id = gnId + "_" + type;
         var list = PrivateClass.eventFromList;
-        var item = list[id] || { has: false };
+        var item = list[id] || { has: false };  //如果IFrom对象不存在，则创建一个新的
         var handlers,datas,index;
         if(!item.has){
             item.type = type;
@@ -41,8 +41,8 @@ gardener.GNEventManager = (function (undefined) {
         }else{
             handlers = item.handlers;
             datas = item.datas;
-            if(handlers.indexOf(handler)>-1){
-                index = handlers.indexOf(handler);
+            index = handlers.indexOf(handler);
+            if(index>-1){
                 if(data){
                     datas[index] = data;
                 }
@@ -75,7 +75,7 @@ gardener.GNEventManager = (function (undefined) {
                 dataList.splice(index,1);
             }
         }
-
+        //如果处理器列表已为空，移除该事件源对象
         if(!list || list.length<=0){
             from.type = null;
             from.gnId = null;
@@ -105,10 +105,13 @@ gardener.GNEventManager = (function (undefined) {
     function hasEventFrom(type,gnId){
         return !!PrivateClass.eventFromList[gnId+"_"+type];
     }
-
-    return {
+//=========================================================================
+    window.gardener.EM = {
         addEventFrom: addEventFrom,
         removeEventFrom: removeEventFrom,
-        getEventFrom: getEventFrom
+        getEventFrom: getEventFrom,
+        hasEventFrom:hasEventFrom
     };
-})();
+
+    return window.gardener.EM;
+})(window);
